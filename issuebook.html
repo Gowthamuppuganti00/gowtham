@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Issue Book - Integrated Library Information and Resources Management</title>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --bg-primary: #0a0f1d;
+      --card-bg: rgba(18, 26, 47, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --glow-color: rgba(99, 102, 241, 0.35);
+      --input-bg: rgba(10, 15, 29, 0.7);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.12) 0px, transparent 50%);
+      min-height: 100vh;
+      color: var(--text-main);
+    }
+
+    /* Ambient background glow */
+    .glow-sphere {
+      position: fixed;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      filter: blur(140px);
+      opacity: 0.12;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Header & Navigation */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 15, 29, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 2.5rem;
+    }
+
+    .brand-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: var(--accent-gradient);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-title i {
+      -webkit-text-fill-color: initial;
+      color: #818cf8;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      color: #4ade80;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: #4ade80;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #4ade80;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    nav ul li a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 0.6rem 1.1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      transition: all 0.25s ease;
+    }
+
+    nav ul li a i {
+      font-size: 0.9rem;
+      transition: transform 0.2s ease;
+    }
+
+    nav ul li a:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    nav ul li a:hover i {
+      transform: scale(1.15);
+    }
+
+    nav ul li a.active {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      box-shadow: 0 4px 20px var(--glow-color);
+      border-color: transparent;
+    }
+
+    /* Main Container & Card Layout */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1300px;
+      margin: 2.5rem auto;
+      padding: 0 2rem;
+    }
+
+    .content-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 2.5rem;
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .content-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent-gradient);
+    }
+
+    .form-header-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .form-header {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .header-icon {
+      width: 52px;
+      height: 52px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      color: #818cf8;
+    }
+
+    .form-header h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .form-header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 2px;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.65rem 1.2rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      border: 1px solid var(--card-border);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s ease;
+    }
+
+    .btn-back:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateX(-3px);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .form-group.full-width {
+      grid-column: span 2;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper i {
+      position: absolute;
+      left: 14px;
+      color: #64748b;
+      font-size: 0.9rem;
+      pointer-events: none;
+      transition: color 0.2s ease;
+    }
+
+    input, select {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      outline: none;
+      transition: all 0.25s ease;
+    }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .select-arrow {
+      position: absolute;
+      right: 14px;
+      left: auto !important;
+      color: #64748b;
+      pointer-events: none;
+    }
+
+    input::placeholder {
+      color: #475569;
+    }
+
+    input:focus, select:focus {
+      border-color: #818cf8;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    input:focus + i, .input-wrapper:focus-within i {
+      color: #818cf8;
+    }
+
+    select option {
+      background-color: #0f172a;
+      color: var(--text-main);
+    }
+
+    .btn-group {
+      grid-column: span 2;
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 1rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--card-border);
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.75rem 1.6rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border-radius: 12px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.25s ease;
+    }
+
+    .btn-submit {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      box-shadow: 0 4px 20px var(--glow-color);
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5);
+    }
+
+    .btn-reset {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-reset:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+    }
+
+    @media (max-width: 900px) {
+      header {
+        padding: 1rem;
+      }
+      .brand-title {
+        font-size: 1rem;
+      }
+      .container {
+        padding: 0 1rem;
+      }
+      .content-card {
+        padding: 1.5rem;
+      }
+      .form-header-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      .btn-back {
+        align-self: flex-start;
+      }
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-group.full-width, .btn-group {
+        grid-column: span 1;
+      }
+      .btn-group {
+        flex-direction: column-reverse;
+      }
+      button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-sphere" style="top: 10%; left: 5%;"></div>
+  <div class="glow-sphere" style="bottom: 10%; right: 5%;"></div>
+
+  <!-- Header Navigation Menu -->
+  <header>
+    <div class="brand-container">
+      <div class="brand-title">
+        <i class="fa-solid fa-layer-group"></i>
+        <span>Integrated Library Information & Resources Management</span>
+      </div>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span>System Online</span>
+      </div>
+    </div>
+    
+    <nav aria-label="Main Navigation">
+      <ul>
+        <li><a href="newbook.html"><i class="fa-solid fa-book-medical"></i> New Book</a></li>
+        <li><a href="newstudent.html"><i class="fa-solid fa-user-plus"></i> New Student</a></li>
+        <li><a href="issuebook.html" class="active"><i class="fa-solid fa-hand-holding-hand"></i> Issue Book</a></li>
+        <li><a href="returnbook.html"><i class="fa-solid fa-rotate-left"></i> Return Book</a></li>
+        <li><a href="renewalbook.html"><i class="fa-solid fa-arrows-rotate"></i> Renewal Book</a></li>
+        <li><a href="viewbook.html"><i class="fa-solid fa-eye"></i> View Books</a></li>
+        <li><a href="studentacquisition.html"><i class="fa-solid fa-graduation-cap"></i> Student Acquisition</a></li>
+        <li><a href="onlinefine.html"><i class="fa-solid fa-receipt"></i> Online Fine System</a></li>
+        <li><a href="aichatbot.html"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Chatbot Assistance</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content Form Section -->
+  <main class="container">
+    <section class="content-card">
+      <div class="form-header-wrapper">
+        <div class="form-header">
+          <div class="header-icon">
+            <i class="fa-solid fa-hand-holding-hand"></i>
+          </div>
+          <div>
+            <h2>Issue Book to Student</h2>
+            <p>Process a new resource checkout, assign borrowing terms, and generate transaction tracking.</p>
+          </div>
+        </div>
+        <!-- Back Button -->
+        <button type="button" class="btn-back" onclick="window.history.back()">
+          <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        </button>
+      </div>
+
+      <form action="/issue-book" method="POST">
+        <div class="form-grid">
+          
+          <div class="form-group">
+            <label for="transactionId">Issue Transaction ID</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-receipt"></i>
+              <input type="text" id="transactionId" name="transactionId" value="ISS-2026-0849" readonly style="opacity: 0.8; cursor: not-allowed;">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="studentId">Student ID / Roll No. *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-id-card"></i>
+              <input type="text" id="studentId" name="studentId" placeholder="e.g., STU-2024-089" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="studentName">Student Full Name *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-user"></i>
+              <input type="text" id="studentName" name="studentName" placeholder="e.g., Jane Doe" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="bookId">Book ID / Accession No. *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-hashtag"></i>
+              <input type="text" id="bookId" name="bookId" placeholder="e.g., BK-9042" required>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="bookTitle">Book Title *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-book"></i>
+              <input type="text" id="bookTitle" name="bookTitle" placeholder="e.g., Operating System Concepts (10th Ed.)" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="issueDate">Issue Date *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-calendar-day"></i>
+              <input type="date" id="issueDate" name="issueDate" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="dueDate">Return Due Date *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-calendar-check"></i>
+              <input type="date" id="dueDate" name="dueDate" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="issuedBy">Issued By (Staff ID) *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-user-gear"></i>
+              <input type="text" id="issuedBy" name="issuedBy" placeholder="e.g., LIBRARIAN-04" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="maxDuration">Borrow Duration (Days)</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-clock"></i>
+              <select id="maxDuration" name="maxDuration">
+                <option value="14" selected>14 Days (Standard)</option>
+                <option value="7">7 Days (Short Term)</option>
+                <option value="30">30 Days (Extended Research)</option>
+              </select>
+              <i class="fa-solid fa-chevron-down select-arrow"></i>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="remarks">Remarks / Initial Book Condition</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-note-sticky"></i>
+              <input type="text" id="remarks" name="remarks" placeholder="e.g., Good condition, hardbound copy with CD attached">
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <button type="reset" class="btn-reset">
+              <i class="fa-solid fa-arrow-rotate-left"></i> Reset Form
+            </button>
+            <button type="submit" class="btn-submit">
+              <i class="fa-solid fa-paper-plane"></i> Confirm & Issue Book
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    // Auto-set today's date and default 14 days due date
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date();
+      const dueDate = new Date();
+      dueDate.setDate(today.getDate() + 14);
+
+      document.getElementById('issueDate').value = today.toISOString().split('T')[0];
+      document.getElementById('dueDate').value = dueDate.toISOString().split('T')[0];
+
+      // Dynamic due date calculation based on selection
+      document.getElementById('maxDuration').addEventListener('change', (e) => {
+        const days = parseInt(e.target.value);
+        const issueVal = document.getElementById('issueDate').value;
+        if (issueVal) {
+          const newDue = new Date(issueVal);
+          newDue.setDate(newDue.getDate() + days);
+          document.getElementById('dueDate').value = newDue.toISOString().split('T')[0];
+        }
+      });
+    });
+  </script>
+</body>
+</html>
