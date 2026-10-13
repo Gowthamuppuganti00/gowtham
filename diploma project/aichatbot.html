@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chatbot Assistance - Integrated Library Information and Resources Management</title>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --bg-primary: #0a0f1d;
+      --card-bg: rgba(18, 26, 47, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --glow-color: rgba(99, 102, 241, 0.35);
+      --input-bg: rgba(10, 15, 29, 0.85);
+      --ai-bubble-bg: rgba(30, 41, 69, 0.75);
+      --user-bubble-bg: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.12) 0px, transparent 50%);
+      min-height: 100vh;
+      color: var(--text-main);
+    }
+
+    /* Ambient background glow */
+    .glow-sphere {
+      position: fixed;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      filter: blur(140px);
+      opacity: 0.12;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Header & Navigation */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 15, 29, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 2.5rem;
+    }
+
+    .brand-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: var(--accent-gradient);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-title i {
+      -webkit-text-fill-color: initial;
+      color: #818cf8;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      color: #4ade80;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: #4ade80;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #4ade80;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    nav ul li a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 0.6rem 1.1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      transition: all 0.25s ease;
+    }
+
+    nav ul li a i {
+      font-size: 0.9rem;
+      transition: transform 0.2s ease;
+    }
+
+    nav ul li a:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    nav ul li a:hover i {
+      transform: scale(1.15);
+    }
+
+    nav ul li a.active {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      box-shadow: 0 4px 20px var(--glow-color);
+      border-color: transparent;
+    }
+
+    /* Main Container & Card Layout */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+
+    .content-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 2rem 2.5rem;
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .content-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent-gradient);
+    }
+
+    .form-header-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .form-header {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .header-icon {
+      width: 52px;
+      height: 52px;
+      background: rgba(168, 85, 247, 0.12);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      color: #c084fc;
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+    }
+
+    .form-header h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .form-header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 2px;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.65rem 1.2rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      border: 1px solid var(--card-border);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s ease;
+    }
+
+    .btn-back:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateX(-3px);
+    }
+
+    /* AI Chat Layout Grid */
+    .chatbot-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 1.5rem;
+      height: 620px;
+    }
+
+    /* Main Chat Interface */
+    .chat-interface {
+      display: flex;
+      flex-direction: column;
+      background: rgba(10, 15, 29, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 1.5rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+
+    .message-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      max-width: 85%;
+    }
+
+    .message-row.user-row {
+      margin-left: auto;
+      flex-direction: row-reverse;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .avatar.ai-avatar {
+      background: var(--accent-gradient);
+      color: #fff;
+      box-shadow: 0 0 12px var(--glow-color);
+    }
+
+    .avatar.user-avatar {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--card-border);
+      color: #cbd5e1;
+    }
+
+    .message-bubble {
+      padding: 1rem 1.25rem;
+      border-radius: 16px;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      position: relative;
+    }
+
+    .ai-row .message-bubble {
+      background: var(--ai-bubble-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      border-top-left-radius: 4px;
+    }
+
+    .user-row .message-bubble {
+      background: var(--user-bubble-bg);
+      color: #ffffff;
+      border-top-right-radius: 4px;
+      box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+    }
+
+    .message-time {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      display: block;
+    }
+
+    .ai-row .message-time {
+      text-align: left;
+    }
+
+    .user-row .message-time {
+      text-align: right;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Prompt Suggestion Chips */
+    .prompt-suggestions {
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      gap: 0.6rem;
+      overflow-x: auto;
+      background: rgba(18, 26, 47, 0.4);
+      border-top: 1px solid var(--card-border);
+    }
+
+    .prompt-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .prompt-chip:hover {
+      background: rgba(99, 102, 241, 0.15);
+      color: #818cf8;
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* Input Bar */
+    .chat-input-wrapper {
+      padding: 1rem 1.25rem;
+      background: rgba(10, 15, 29, 0.8);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-input-wrapper input {
+      flex: 1;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 0.8rem 1.2rem;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      outline: none;
+      transition: all 0.25s ease;
+    }
+
+    .chat-input-wrapper input:focus {
+      border-color: #818cf8;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-send {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      border: none;
+      padding: 0 1.4rem;
+      height: 42px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px var(--glow-color);
+      transition: all 0.25s ease;
+    }
+
+    .btn-send:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+    }
+
+    /* Sidebar Assistant Info */
+    .assistant-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .sidebar-card {
+      background: rgba(10, 15, 29, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.25rem;
+    }
+
+    .sidebar-card h4 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-card h4 i {
+      color: #818cf8;
+    }
+
+    .capability-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .capability-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+
+    .capability-item i {
+      color: #4ade80;
+      margin-top: 3px;
+      font-size: 0.8rem;
+    }
+
+    .model-info-box {
+      background: rgba(168, 85, 247, 0.08);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .model-info-box .version-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #c084fc;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .model-info-box p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .typing-indicator {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 14px;
+      background: var(--ai-bubble-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      width: fit-content;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #818cf8;
+      border-radius: 50%;
+      animation: typing 1.4s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0%, 100% { transform: translateY(0); opacity: 0.4; }
+      50% { transform: translateY(-4px); opacity: 1; }
+    }
+
+    @media (max-width: 1024px) {
+      .chatbot-grid {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      .chat-interface {
+        height: 550px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header { padding: 1rem; }
+      .container { padding: 0 1rem; }
+      .content-card { padding: 1.5rem; }
+      .message-row { max-width: 95%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-sphere" style="top: 10%; left: 5%;"></div>
+  <div class="glow-sphere" style="bottom: 10%; right: 5%;"></div>
+
+  <!-- Header Navigation Menu -->
+  <header>
+    <div class="brand-container">
+      <div class="brand-title">
+        <i class="fa-solid fa-layer-group"></i>
+        <span>Integrated Library Information & Resources Management</span>
+      </div>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span>System Online</span>
+      </div>
+    </div>
+    
+    <nav aria-label="Main Navigation">
+      <ul>
+         <li><a href="newbook.html" class="active"><i class="fa-solid fa-book-medical"></i> New Book</a></li>
+        <li><a href="newstudent.html"><i class="fa-solid fa-user-plus"></i> New Student</a></li>
+        <li><a href="issuebook.html"><i class="fa-solid fa-hand-holding-hand"></i> Issue Book</a></li>
+        <li><a href="returnbook.html"><i class="fa-solid fa-rotate-left"></i> Return Book</a></li>
+        <li><a href="renewalbook.html"><i class="fa-solid fa-arrows-rotate"></i> Renewal Book</a></li>
+        <li><a href="viewbook.html"><i class="fa-solid fa-books"></i> View Books</a></li>
+        <li><a href="studentacquisition.html"><i class="fa-solid fa-graduation-cap"></i> Student Acquisition</a></li>
+        <li><a href="onlinefine.html"><i class="fa-solid fa-receipt"></i> Online Fine System</a></li>
+        <li><a href="aichatbot.html" class="active"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Chatbot Assistance</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="container">
+    <section class="content-card">
+      <div class="form-header-wrapper">
+        <div class="form-header">
+          <div class="header-icon">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div>
+            <h2>AI Intelligent Assistant</h2>
+            <p>Real-time conversational helper for catalog searching, borrowing policies, fine queries, and automated extensions.</p>
+          </div>
+        </div>
+        <!-- Back Button -->
+        <button type="button" class="btn-back" onclick="window.history.back()">
+          <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        </button>
+      </div>
+
+      <!-- Chatbot Main Workspace -->
+      <div class="chatbot-grid">
+        
+        <!-- Chat Interface Box -->
+        <div class="chat-interface">
+          <div class="chat-messages" id="chatMessages">
+            
+            <!-- AI Welcome Message -->
+            <div class="message-row ai-row">
+              <div class="avatar ai-avatar"><i class="fa-solid fa-robot"></i></div>
+              <div>
+                <div class="message-bubble">
+                  Hello! I am your <strong>Library Intelligence Assistant</strong>. How can I assist you today? You can ask me to search for book availability, check fine rules, query due dates, or guide you through renewing your borrowed items.
+                </div>
+                <span class="message-time">Just now • Automated Assistant</span>
+              </div>
+            </div>
+
+            <!-- Demo User Query -->
+            <div class="message-row user-row">
+              <div class="avatar user-avatar"><i class="fa-solid fa-user"></i></div>
+              <div>
+                <div class="message-bubble">
+                  Hi, can you check if "Operating System Concepts" by Silberschatz is available in Computer Science?
+                </div>
+                <span class="message-time">2 mins ago</span>
+              </div>
+            </div>
+
+            <!-- Demo AI Response -->
+            <div class="message-row ai-row">
+              <div class="avatar ai-avatar"><i class="fa-solid fa-robot"></i></div>
+              <div>
+                <div class="message-bubble">
+                  Yes! <strong>"Operating System Concepts" (10th Ed.)</strong> is currently available in the catalog.<br><br>
+                  • <strong>Accession ID:</strong> BK-9042<br>
+                  • <strong>Shelf Location:</strong> Bay 4, Rack C-2<br>
+                  • <strong>Availability:</strong> 6 of 10 copies ready for checkout.<br><br>
+                  Would you like me to generate a reservation link or prepare an Issue Request?
+                </div>
+                <span class="message-time">1 min ago • Verified from Database</span>
+              </div>
+            </div>
+
+            <!-- Dynamic Typing Indicator Container -->
+            <div class="typing-indicator" id="typingIndicator">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+
+          </div>
+
+          <!-- Prompt Suggestions -->
+          <div class="prompt-suggestions">
+            <div class="prompt-chip" onclick="sendPrompt('Is Operating System Concepts available?')">
+              <i class="fa-solid fa-magnifying-glass"></i> Check Book Availability
+            </div>
+            <div class="prompt-chip" onclick="sendPrompt('How much fine is charged per overdue day?')">
+              <i class="fa-solid fa-receipt"></i> Overdue Fine Policy (₹)
+            </div>
+            <div class="prompt-chip" onclick="sendPrompt('How to extend/renew my borrowed book?')">
+              <i class="fa-solid fa-arrows-rotate"></i> Renewal Rules
+            </div>
+            <div class="prompt-chip" onclick="sendPrompt('What are the library opening hours?')">
+              <i class="fa-solid fa-clock"></i> Timings & Access
+            </div>
+          </div>
+
+          <!-- Input Bar -->
+          <form id="chatForm" onsubmit="handleChatSubmit(event)">
+            <div class="chat-input-wrapper">
+              <button type="button" class="icon-btn" title="Attach Document / ID"><i class="fa-solid fa-paperclip"></i></button>
+              <input type="text" id="userInput" placeholder="Ask anything about catalog, fines, borrowing policies..." autocomplete="off" required>
+              <button type="button" class="icon-btn" title="Voice Search"><i class="fa-solid fa-microphone"></i></button>
+              <button type="submit" class="btn-send">
+                <span>Send</span>
+                <i class="fa-solid fa-paper-plane"></i>
+              </button>
+            </div>
+          </form>
+
+        </div>
+
+        <!-- Sidebar Assistant Controls -->
+        <div class="assistant-sidebar">
+          
+          <div class="model-info-box">
+            <div class="version-title">
+              <span>LibraryAI Engine v4.2</span>
+              <span class="status-badge" style="padding: 2px 8px; font-size: 0.68rem;"><span class="status-dot"></span> Active</span>
+            </div>
+            <p>Connected directly to Integrated Library Management Relational DB & Index Vectors.</p>
+          </div>
+
+          <div class="sidebar-card">
+            <h4><i class="fa-solid fa-bolt"></i> Key Capabilities</h4>
+            <ul class="capability-list">
+              <li class="capability-item">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Instant ISBN & Accession ID lookup across catalog shelves.</span>
+              </li>
+              <li class="capability-item">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Real-time overdue fine calculations (standard ₹10/day).</span>
+              </li>
+              <li class="capability-item">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Renewal eligibility assessment and automatic due extensions.</span>
+              </li>
+              <li class="capability-item">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Student Acquisition manifest verification & card assistance.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="sidebar-card">
+            <h4><i class="fa-solid fa-shield-halved"></i> Security & Privacy</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+              All queries are encrypted. Borrowing history and personal roll numbers are authenticated under strict academic access controls.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- Interactive JavaScript Chat Handler -->
+  <script>
+    const chatMessages = document.getElementById('chatMessages');
+    const userInput = document.getElementById('userInput');
+    const typingIndicator = document.getElementById('typingIndicator');
+
+    function getCurrentTime() {
+      const now = new Date();
+      return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function appendMessage(sender, text) {
+      const rowDiv = document.createElement('div');
+      rowDiv.className = `message-row ${sender}-row`;
+
+      const avatarDiv = document.createElement('div');
+      avatarDiv.className = `avatar ${sender}-avatar`;
+      avatarDiv.innerHTML = sender === 'ai' ? '<i class="fa-solid fa-robot"></i>' : '<i class="fa-solid fa-user"></i>';
+
+      const contentWrapper = document.createElement('div');
+      
+      const bubbleDiv = document.createElement('div');
+      bubbleDiv.className = 'message-bubble';
+      bubbleDiv.innerHTML = text;
+
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'message-time';
+      timeSpan.textContent = `${getCurrentTime()} • ${sender === 'ai' ? 'Automated Response' : 'You'}`;
+
+      contentWrapper.appendChild(bubbleDiv);
+      contentWrapper.appendChild(timeSpan);
+
+      rowDiv.appendChild(avatarDiv);
+      rowDiv.appendChild(contentWrapper);
+
+      // Insert before typing indicator
+      chatMessages.insertBefore(rowDiv, typingIndicator);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function showTyping(show) {
+      typingIndicator.style.display = show ? 'flex' : 'none';
+      if (show) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+    }
+
+    async function handleChatSubmit(e) {
+      e.preventDefault();
+      const text = userInput.value.trim();
+      if (!text) return;
+
+      appendMessage('user', text);
+      userInput.value = '';
+
+      showTyping(true);
+
+      try {
+        const response = await fetch('http://localhost:5000/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+
+        const data = await response.json();
+        showTyping(false);
+
+        if (data && data.reply) {
+          appendMessage('ai', data.reply);
+        } else {
+          appendMessage('ai', 'Sorry, I encountered an issue retrieving information from the server.');
+        }
+      } catch (err) {
+        showTyping(false);
+        appendMessage('ai', 'Unable to connect to the backend server. Please verify your connection.');
+      }
+    }
+
+    function sendPrompt(promptText) {
+      userInput.value = promptText;
+      handleChatSubmit(new Event('submit'));
+    }
+  </script>
+</body>
+</html>
