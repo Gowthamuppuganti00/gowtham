@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Books & Library Catalog - Integrated Library Information and Resources Management</title>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --bg-primary: #0a0f1d;
+      --card-bg: rgba(18, 26, 47, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --glow-color: rgba(99, 102, 241, 0.35);
+      --input-bg: rgba(10, 15, 29, 0.7);
+      --success-color: #22c55e;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --info-color: #38bdf8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.12) 0px, transparent 50%);
+      min-height: 100vh;
+      color: var(--text-main);
+    }
+
+    /* Ambient background glow */
+    .glow-sphere {
+      position: fixed;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      filter: blur(140px);
+      opacity: 0.12;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Header & Navigation */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 15, 29, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 2.5rem;
+    }
+
+    .brand-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: var(--accent-gradient);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-title i {
+      -webkit-text-fill-color: initial;
+      color: #818cf8;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      color: #4ade80;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: #4ade80;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #4ade80;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    nav ul li a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 0.6rem 1.1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      transition: all 0.25s ease;
+    }
+
+    nav ul li a i {
+      font-size: 0.9rem;
+      transition: transform 0.2s ease;
+    }
+
+    nav ul li a:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    nav ul li a:hover i {
+      transform: scale(1.15);
+    }
+
+    nav ul li a.active {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      box-shadow: 0 4px 20px var(--glow-color);
+      border-color: transparent;
+    }
+
+    /* Main Container & Card Layout */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 2.5rem auto;
+      padding: 0 2rem;
+    }
+
+    .content-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 2.5rem;
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .content-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent-gradient);
+    }
+
+    .form-header-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .form-header {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .header-icon {
+      width: 52px;
+      height: 52px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      color: #818cf8;
+    }
+
+    .form-header h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .form-header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 2px;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.65rem 1.2rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      border: 1px solid var(--card-border);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s ease;
+    }
+
+    .btn-back:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateX(-3px);
+    }
+
+    /* Stat Badges Ribbon */
+    .catalog-stats-ribbon {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-mini-card {
+      background: rgba(10, 15, 29, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 1.2rem 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-mini-card .stat-details h4 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .stat-mini-card .stat-details span {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: block;
+      margin-top: 2px;
+    }
+
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .stat-icon.purple { background: rgba(168, 85, 247, 0.12); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .stat-icon.green { background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+    .stat-icon.blue { background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .stat-icon.amber { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    /* Search and Filter Section */
+    .filter-bar {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 1.2rem;
+      margin-bottom: 1.8rem;
+    }
+
+    .search-input-wrapper, .filter-select-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input-wrapper i, .filter-select-wrapper i {
+      position: absolute;
+      left: 14px;
+      color: #64748b;
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+
+    input, select {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      outline: none;
+      transition: all 0.25s ease;
+    }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .select-arrow {
+      position: absolute;
+      right: 14px;
+      left: auto !important;
+      color: #64748b;
+      pointer-events: none;
+    }
+
+    input::placeholder {
+      color: #475569;
+    }
+
+    input:focus, select:focus {
+      border-color: #818cf8;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    select option {
+      background-color: #0f172a;
+      color: var(--text-main);
+    }
+
+    /* Books Table Styling */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 14px;
+      border: 1px solid var(--card-border);
+      background: rgba(10, 15, 29, 0.4);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(18, 26, 47, 0.9);
+      padding: 1rem 1.2rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1px solid var(--card-border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 1rem 1.2rem;
+      font-size: 0.88rem;
+      color: var(--text-main);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+    }
+
+    tbody tr {
+      transition: background 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: rgba(99, 102, 241, 0.05);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .book-info-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .book-cover-placeholder {
+      width: 38px;
+      height: 48px;
+      border-radius: 6px;
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 1rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .book-meta strong {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .book-meta span {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .accession-tag {
+      font-family: monospace;
+      font-size: 0.82rem;
+      color: #818cf8;
+      background: rgba(129, 140, 248, 0.1);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(129, 140, 248, 0.25);
+    }
+
+    /* Status Pill Badges */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .status-available {
+      background: rgba(34, 197, 94, 0.12);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .status-issued {
+      background: rgba(245, 158, 11, 0.12);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .status-maintenance {
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .action-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      font-size: 0.85rem;
+    }
+
+    .action-btn:hover {
+      background: rgba(99, 102, 241, 0.15);
+      color: #818cf8;
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .action-btn.issue-btn:hover {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border-color: rgba(34, 197, 94, 0.4);
+    }
+
+    /* Table Footer Pagination */
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.25rem;
+      padding: 0 0.5rem;
+    }
+
+    .pagination-info {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .pagination-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .page-btn {
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .page-btn:hover, .page-btn.active {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      border-color: transparent;
+    }
+
+    /* Checkbox and Multi-select Styling */
+    .checkbox-col {
+      width: 50px;
+      text-align: center;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #818cf8;
+    }
+
+    tbody tr.selected {
+      background: rgba(99, 102, 241, 0.15) !important;
+    }
+
+    /* Bulk Actions Bar */
+    .bulk-actions-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.5rem;
+      gap: 1rem;
+    }
+
+    .bulk-actions-bar.active {
+      display: flex;
+    }
+
+    .bulk-actions-info {
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .bulk-actions-buttons {
+      display: flex;
+      gap: 0.8rem;
+    }
+
+    .bulk-delete-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.6rem 1.2rem;
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.25s ease;
+    }
+
+    .bulk-delete-btn:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: rgba(239, 68, 68, 0.6);
+    }
+
+    .bulk-clear-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.6rem 1.2rem;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.25s ease;
+    }
+
+    .bulk-clear-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+    }
+
+    @media (max-width: 900px) {
+      header {
+        padding: 1rem;
+      }
+      .brand-title {
+        font-size: 1rem;
+      }
+      .container {
+        padding: 0 1rem;
+      }
+      .content-card {
+        padding: 1.5rem;
+      }
+      .form-header-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      .btn-back {
+        align-self: flex-start;
+      }
+      .filter-bar {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-sphere" style="top: 10%; left: 5%;"></div>
+  <div class="glow-sphere" style="bottom: 10%; right: 5%;"></div>
+
+  <!-- Header Navigation Menu -->
+  <header>
+    <div class="brand-container">
+      <div class="brand-title">
+        <i class="fa-solid fa-layer-group"></i>
+        <span>Integrated Library Information & Resources Management</span>
+      </div>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span>System Online</span>
+      </div>
+    </div>
+    
+    <nav aria-label="Main Navigation">
+      <ul>
+        <li><a href="newbook.html"><i class="fa-solid fa-book-medical"></i> New Book</a></li>
+        <li><a href="newstudent.html"><i class="fa-solid fa-user-plus"></i> New Student</a></li>
+        <li><a href="issuebook.html"><i class="fa-solid fa-hand-holding-hand"></i> Issue Book</a></li>
+        <li><a href="returnbook.html"><i class="fa-solid fa-rotate-left"></i> Return Book</a></li>
+        <li><a href="renewalbook.html"><i class="fa-solid fa-arrows-rotate"></i> Renewal Book</a></li>
+        <li><a href="viewbook.html"><i class="fa-solid fa-books"></i> View Books</a></li>
+        <li><a href="studentacquisition.html"><i class="fa-solid fa-graduation-cap"></i> Student Acquisition</a></li>
+        <li><a href="onlinefine.html"><i class="fa-solid fa-receipt"></i> Online Fine System</a></li>
+        <li><a href="aichatbot.html"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Chatbot Assistance</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content Table & Directory Section -->
+  <main class="container">
+    <section class="content-card">
+      <div class="form-header-wrapper">
+        <div class="form-header">
+          <div class="header-icon">
+            <i class="fa-solid fa-book-open-reader"></i>
+          </div>
+          <div>
+            <h2>Library Book Directory & Catalog</h2>
+            <p>Browse, query, and manage available resources, shelf allocations, and availability statuses.</p>
+          </div>
+        </div>
+        <!-- Back Button -->
+        <button type="button" class="btn-back" onclick="window.history.back()">
+          <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        </button>
+      </div>
+
+      <!-- Quick Metrics Ribbon -->
+      <div class="catalog-stats-ribbon">
+        <div class="stat-mini-card">
+          <div class="stat-details">
+            <h4>Total Catalog Books</h4>
+            <span id="statTotalCount">24,850</span>
+          </div>
+          <div class="stat-icon purple"><i class="fa-solid fa-book-bookmark"></i></div>
+        </div>
+        <div class="stat-mini-card">
+          <div class="stat-details">
+            <h4>Currently Available</h4>
+            <span id="statAvailableCount">19,428</span>
+          </div>
+          <div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
+        </div>
+        <div class="stat-mini-card">
+          <div class="stat-details">
+            <h4>Issued / On Loan</h4>
+            <span id="statIssuedCount">5,142</span>
+          </div>
+          <div class="stat-icon blue"><i class="fa-solid fa-hand-holding-hand"></i></div>
+        </div>
+        <div class="stat-mini-card">
+          <div class="stat-details">
+            <h4>Under Maintenance</h4>
+            <span id="statMaintenanceCount">280</span>
+          </div>
+          <div class="stat-icon amber"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+        </div>
+      </div>
+
+      <!-- Real-time Filter & Search Inputs -->
+      <div class="filter-bar">
+        <div class="search-input-wrapper">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="searchInput" placeholder="Search by Book Title, Author, ISBN, or Accession ID...">
+        </div>
+
+        <div class="filter-select-wrapper">
+          <i class="fa-solid fa-filter"></i>
+          <select id="categoryFilter">
+            <option value="ALL">All Departments & Categories</option>
+            <option value="Computer Science">Computer Science & IT</option>
+            <option value="Electronics">Electronics & Comm.</option>
+            <option value="Mechanical">Mechanical Engineering</option>
+            <option value="Civil">Civil Engineering</option>
+            <option value="Mathematics">Applied Mathematics</option>
+            <option value="Reference">Reference & Humanities</option>
+          </select>
+          <i class="fa-solid fa-chevron-down select-arrow"></i>
+        </div>
+
+        <div class="filter-select-wrapper">
+          <i class="fa-solid fa-signal"></i>
+          <select id="statusFilter">
+            <option value="ALL">All Statuses</option>
+            <option value="Available">Available Only</option>
+            <option value="Issued">Issued / Out on Loan</option>
+            <option value="Maintenance">Under Maintenance</option>
+          </select>
+          <i class="fa-solid fa-chevron-down select-arrow"></i>
+        </div>
+      </div>
+
+      <!-- Catalog Table -->
+      <div class="table-responsive">
+        <table id="booksTable">
+          <thead>
+            <tr>
+              <th class="checkbox-col"><input type="checkbox" id="selectAllCheckbox" title="Select All"></th>
+              <th>Accession ID</th>
+              <th>Book Specifications</th>
+              <th>Category</th>
+              <th>ISBN Code</th>
+              <th>Shelf Location</th>
+              <th>Available Copies</th>
+              <th>Status</th>
+              <th>Quick Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-book-id="BK-9042">
+              <td class="checkbox-col"><input type="checkbox" class="row-checkbox" value="BK-9042"></td>
+              <td><span class="accession-tag">BK-9042</span></td>
+              <td>
+                <div class="book-info-cell">
+                  <div class="book-cover-placeholder"><i class="fa-solid fa-book"></i></div>
+                  <div class="book-meta">
+                    <strong>Operating System Concepts</strong>
+                    <span>by Abraham Silberschatz, Peter B. Galvin (10th Ed.)</span>
+                  </div>
+                </div>
+              </td>
+              <td>Computer Science</td>
+              <td>978-1119320913</td>
+              <td>Bay 4, Rack C-2</td>
+              <td><strong>6 / 10</strong></td>
+              <td><span class="status-pill status-available"><i class="fa-solid fa-circle"></i> Available</span></td>
+              <td>
+                <div class="action-btn-group">
+                  <a href="#issue-book" class="action-btn issue-btn" title="Issue Book"><i class="fa-solid fa-hand-holding-hand"></i></a>
+                  <button type="button" class="action-btn" title="Edit Record"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button type="button" class="action-btn" title="View Details"><i class="fa-solid fa-eye"></i></button>
+                  <button type="button" class="action-btn delete-btn" title="Delete Record"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+              </td>
+            </tr>
+
+            <tr data-book-id="BK-8821">
+              <td class="checkbox-col"><input type="checkbox" class="row-checkbox" value="BK-8821"></td>
+              <td><span class="accession-tag">BK-8821</span></td>
+              <td>
+                <div class="book-info-cell">
+                  <div class="book-cover-placeholder" style="background: linear-gradient(135deg, #3b82f6, #06b6d4);"><i class="fa-solid fa-code"></i></div>
+                  <div class="book-meta">
+                    <strong>Clean Code: Agile Software Craftsmanship</strong>
+                    <span>by Robert C. Martin (1st Ed.)</span>
+                  </div>
+                </div>
+              </td>
+              <td>Computer Science</td>
+              <td>978-0132350884</td>
+              <td>Bay 2, Rack A-1</td>
+              <td><strong>0 / 5</strong></td>
+              <td><span class="status-pill status-issued"><i class="fa-solid fa-circle"></i> Out on Loan</span></td>
+              <td>
+                <div class="action-btn-group">
+                  <button type="button" class="action-btn" title="Reserve Book"><i class="fa-solid fa-bookmark"></i></button>
+                  <button type="button" class="action-btn" title="Edit Record"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button type="button" class="action-btn" title="View Details"><i class="fa-solid fa-eye"></i></button>
+                  <button type="button" class="action-btn delete-btn" title="Delete Record"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+              </td>
+            </tr>
+
+            <tr data-book-id="BK-7612">
+              <td class="checkbox-col"><input type="checkbox" class="row-checkbox" value="BK-7612"></td>
+              <td><span class="accession-tag">BK-7612</span></td>
+              <td>
+                <div class="book-info-cell">
+                  <div class="book-cover-placeholder" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="fa-solid fa-microchip"></i></div>
+                  <div class="book-meta">
+                    <strong>Microelectronic Circuits & Devices</strong>
+                    <span>by Adel S. Sedra, Kenneth C. Smith (8th Ed.)</span>
+                  </div>
+                </div>
+              </td>
+              <td>Electronics</td>
+              <td>978-0190853464</td>
+              <td>Bay 7, Rack E-4</td>
+              <td><strong>4 / 8</strong></td>
+              <td><span class="status-pill status-available"><i class="fa-solid fa-circle"></i> Available</span></td>
+              <td>
+                <div class="action-btn-group">
+                  <a href="#issue-book" class="action-btn issue-btn" title="Issue Book"><i class="fa-solid fa-hand-holding-hand"></i></a>
+                  <button type="button" class="action-btn" title="Edit Record"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button type="button" class="action-btn" title="View Details"><i class="fa-solid fa-eye"></i></button>
+                  <button type="button" class="action-btn delete-btn" title="Delete Record"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+              </td>
+            </tr>
+
+            <tr data-book-id="BK-6504">
+              <td class="checkbox-col"><input type="checkbox" class="row-checkbox" value="BK-6504"></td>
+              <td><span class="accession-tag">BK-6504</span></td>
+              <td>
+                <div class="book-info-cell">
+                  <div class="book-cover-placeholder" style="background: linear-gradient(135deg, #f59e0b, #ea580c);"><i class="fa-solid fa-gear"></i></div>
+                  <div class="book-meta">
+                    <strong>Fundamentals of Thermodynamics</strong>
+                    <span>by Claus Borgnakke, Richard E. Sonntag (9th Ed.)</span>
+                  </div>
+                </div>
+              </td>
+              <td>Mechanical</td>
+              <td>978-1118895887</td>
+              <td>Bay 9, Rack B-3</td>
+              <td><strong>0 / 4</strong></td>
+              <td><span class="status-pill status-maintenance"><i class="fa-solid fa-circle"></i> Maintenance</span></td>
+              <td>
+                <div class="action-btn-group">
+                  <button type="button" class="action-btn" title="Binding Repair Status"><i class="fa-solid fa-wrench"></i></button>
+                  <button type="button" class="action-btn" title="Edit Record"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button type="button" class="action-btn" title="View Details"><i class="fa-solid fa-eye"></i></button>
+                  <button type="button" class="action-btn delete-btn" title="Delete Record"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+              </td>
+            </tr>
+
+            <tr data-book-id="BK-9120">
+              <td class="checkbox-col"><input type="checkbox" class="row-checkbox" value="BK-9120"></td>
+              <td><span class="accession-tag">BK-9120</span></td>
+              <td>
+                <div class="book-info-cell">
+                  <div class="book-cover-placeholder" style="background: linear-gradient(135deg, #ec4899, #8b5cf6);"><i class="fa-solid fa-square-root-variable"></i></div>
+                  <div class="book-meta">
+                    <strong>Advanced Engineering Mathematics</strong>
+                    <span>by Erwin Kreyszig (10th Ed.)</span>
+                  </div>
+                </div>
+              </td>
+              <td>Mathematics</td>
+              <td>978-0470458365</td>
+              <td>Bay 1, Rack F-2</td>
+              <td><strong>12 / 15</strong></td>
+              <td><span class="status-pill status-available"><i class="fa-solid fa-circle"></i> Available</span></td>
+              <td>
+                <div class="action-btn-group">
+                  <a href="#issue-book" class="action-btn issue-btn" title="Issue Book"><i class="fa-solid fa-hand-holding-hand"></i></a>
+                  <button type="button" class="action-btn" title="Edit Record"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button type="button" class="action-btn" title="View Details"><i class="fa-solid fa-eye"></i></button>
+                  <button type="button" class="action-btn delete-btn" title="Delete Record"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+              </td>
+            </tr>
+
+            <tr data-book-id="BK-5421">
+              <td class="checkbox-col"><input type="checkbox" class="row-checkbox" value="BK-5421"></td>
+              <td><span class="accession-tag">BK-5421</span></td>
+              <td>
+                <div class="book-info-cell">
+                  <div class="book-cover-placeholder" style="background: linear-gradient(135deg, #06b6d4, #3b82f6);"><i class="fa-solid fa-building"></i></div>
+                  <div class="book-meta">
+                    <strong>Structural Analysis & Steel Design</strong>
+                    <span>by R. C. Hibbeler (10th Ed.)</span>
+                  </div>
+                </div>
+              </td>
+              <td>Civil</td>
+              <td>978-0134610672</td>
+              <td>Bay 11, Rack D-1</td>
+              <td><strong>2 / 6</strong></td>
+              <td><span class="status-pill status-available"><i class="fa-solid fa-circle"></i> Available</span></td>
+              <td>
+                <div class="action-btn-group">
+                  <a href="#issue-book" class="action-btn issue-btn" title="Issue Book"><i class="fa-solid fa-hand-holding-hand"></i></a>
+                  <button type="button" class="action-btn" title="Edit Record"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button type="button" class="action-btn" title="View Details"><i class="fa-solid fa-eye"></i></button>
+                  <button type="button" class="action-btn delete-btn" title="Delete Record"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bulk Actions Bar -->
+      <div class="bulk-actions-bar" id="bulkActionsBar">
+        <div class="bulk-actions-info">
+          <span id="selectedCount">0</span> book(s) selected
+        </div>
+        <div class="bulk-actions-buttons">
+          <button type="button" class="bulk-delete-btn" id="bulkDeleteBtn">
+            <i class="fa-solid fa-trash-can"></i> Delete Selected
+          </button>
+          <button type="button" class="bulk-clear-btn" id="bulkClearBtn">
+            <i class="fa-solid fa-xmark"></i> Clear Selection
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer Pagination -->
+      <div class="table-footer">
+        <div class="pagination-info">Showing 1 to 6 of 24,850 book records</div>
+        <div class="pagination-controls">
+          <button class="page-btn"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">...</button>
+          <button class="page-btn">414</button>
+          <button class="page-btn"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Interactive JavaScript Search & Filter & Multi-Select Handler -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('searchInput');
+      const categoryFilter = document.getElementById('categoryFilter');
+      const statusFilter = document.getElementById('statusFilter');
+      const tableRows = document.querySelectorAll('#booksTable tbody tr');
+      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+      const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+      const bulkActionsBar = document.getElementById('bulkActionsBar');
+      const selectedCountSpan = document.getElementById('selectedCount');
+      const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+      const bulkClearBtn = document.getElementById('bulkClearBtn');
+      const deleteButtons = document.querySelectorAll('.delete-btn');
+
+      function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const selectedCat = categoryFilter.value;
+        const selectedStatus = statusFilter.value;
+
+        tableRows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          const categoryCell = row.children[2].textContent.trim();
+          const statusCell = row.children[6].textContent.trim();
+
+          const matchesSearch = text.includes(searchTerm);
+          const matchesCategory = (selectedCat === 'ALL' || categoryCell.includes(selectedCat));
+          
+          let matchesStatus = true;
+          if (selectedStatus === 'Available') matchesStatus = statusCell.includes('Available');
+          else if (selectedStatus === 'Issued') matchesStatus = statusCell.includes('Out on Loan');
+          else if (selectedStatus === 'Maintenance') matchesStatus = statusCell.includes('Maintenance');
+
+          if (matchesSearch && matchesCategory && matchesStatus) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      }
+
+      searchInput.addEventListener('input', filterTable);
+      categoryFilter.addEventListener('change', filterTable);
+      statusFilter.addEventListener('change', filterTable);
+
+      // Multi-select functionality
+      function updateBulkActionsBar() {
+        const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+        selectedCountSpan.textContent = checkedCount;
+        
+        if (checkedCount > 0) {
+          bulkActionsBar.classList.add('active');
+        } else {
+          bulkActionsBar.classList.remove('active');
+        }
+      }
+
+      function updateSelectAllCheckbox() {
+        const visibleRows = Array.from(tableRows).filter(row => row.style.display !== 'none');
+        const visibleCheckboxes = visibleRows.map(row => row.querySelector('.row-checkbox'));
+        const allChecked = visibleCheckboxes.length > 0 && visibleCheckboxes.every(cb => cb.checked);
+        selectAllCheckbox.checked = allChecked;
+        selectAllCheckbox.indeterminate = visibleCheckboxes.some(cb => cb.checked) && !allChecked;
+      }
+
+      // Select all functionality
+      selectAllCheckbox.addEventListener('change', () => {
+        const visibleRows = Array.from(tableRows).filter(row => row.style.display !== 'none');
+        visibleRows.forEach(row => {
+          const checkbox = row.querySelector('.row-checkbox');
+          checkbox.checked = selectAllCheckbox.checked;
+          row.classList.toggle('selected', checkbox.checked);
+        });
+        updateBulkActionsBar();
+      });
+
+      // Individual checkbox handling
+      rowCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          const row = checkbox.closest('tr');
+          row.classList.toggle('selected', checkbox.checked);
+          updateSelectAllCheckbox();
+          updateBulkActionsBar();
+        });
+      });
+
+      // Bulk delete functionality
+      bulkDeleteBtn.addEventListener('click', () => {
+        const selectedBooks = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+        if (selectedBooks.length > 0) {
+          if (confirm(`Delete ${selectedBooks.length} book(s)? This action cannot be undone.`)) {
+            selectedBooks.forEach(bookId => {
+              const row = document.querySelector(`tr[data-book-id="${bookId}"]`);
+              if (row) {
+                row.style.opacity = '0';
+                setTimeout(() => row.remove(), 300);
+              }
+            });
+            updateBulkActionsBar();
+          }
+        }
+      });
+
+      // Clear selection
+      bulkClearBtn.addEventListener('click', () => {
+        selectAllCheckbox.checked = false;
+        rowCheckboxes.forEach(cb => cb.checked = false);
+        tableRows.forEach(row => row.classList.remove('selected'));
+        updateBulkActionsBar();
+      });
+
+      // Individual delete buttons
+      deleteButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const row = btn.closest('tr');
+          const bookId = row.getAttribute('data-book-id');
+          if (confirm(`Delete book ${bookId}? This action cannot be undone.`)) {
+            row.style.opacity = '0';
+            setTimeout(() => row.remove(), 300);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
